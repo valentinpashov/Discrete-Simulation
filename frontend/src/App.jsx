@@ -2,38 +2,103 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 function App() {
-  const [params, setParams] = useState({ time: 100, students: 50, cashiers: 2, cookers: 3, seats: 20 });
+  const [params, setParams] = useState({ 
+    time: 100, 
+    students: 50, 
+    cashiers: 2, 
+    cookers: 3, 
+    seats: 20 
+  });
   const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const startSim = async () => {
+    setLoading(true);
     try {
       const res = await axios.get('http://127.0.0.1:8000/simulate', { params });
       setResult(res.data);
     } catch (err) {
-      alert("Грешка при връзката с Backend-а! Уверете се, че FastAPI сървърът работи.");
+      alert("Fehler bei der Verbindung zum Backend! Stellen Sie sicher, dass der FastAPI-Server läuft.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: '30px', maxWidth: '600px', margin: 'auto', fontFamily: 'Arial' }}>
+    <div className="container">
       <h1>Mensa Simulator</h1>
-      <div style={{ display: 'grid', gap: '10px', marginBottom: '20px' }}>
-        <label>Време (мин): <input type="number" value={params.time} onChange={e => setParams({...params, time: e.target.value})} /></label>
-        <label>Студенти: <input type="number" value={params.students} onChange={e => setParams({...params, students: e.target.value})} /></label>
-        <label>Касиери: <input type="number" value={params.cashiers} onChange={e => setParams({...params, cashiers: e.target.value})} /></label>
-        <label>Готвачи: <input type="number" value={params.cookers} onChange={e => setParams({...params, cookers: e.target.value})} /></label>
-        <label>Места: <input type="number" value={params.seats} onChange={e => setParams({...params, seats: e.target.value})} /></label>
+      <p className="subtitle">Konfigurieren Sie die Parameter für die Warteschlangensimulation</p>
+      
+      <div className="input-group">
+        <label>
+          <span>Simulationszeit (Min):</span>
+          <input 
+            type="number" 
+            value={params.time} 
+            onChange={e => setParams({...params, time: e.target.value})} 
+          />
+        </label>
+
+        <label>
+          <span>Anzahl der Studenten:</span>
+          <input 
+            type="number" 
+            value={params.students} 
+            onChange={e => setParams({...params, students: e.target.value})} 
+          />
+        </label>
+
+        <label>
+          <span>Anzahl der Kassierer:</span>
+          <input 
+            type="number" 
+            value={params.cashiers} 
+            onChange={e => setParams({...params, cashiers: e.target.value})} 
+          />
+        </label>
+
+        <label>
+          <span>Anzahl der Köche:</span>
+          <input 
+            type="number" 
+            value={params.cookers} 
+            onChange={e => setParams({...params, cookers: e.target.value})} 
+          />
+        </label>
+
+        <label>
+          <span>Sitzplätze:</span>
+          <input 
+            type="number" 
+            value={params.seats} 
+            onChange={e => setParams({...params, seats: e.target.value})} 
+          />
+        </label>
         
-        <button onClick={startSim} style={{ padding: '12px', background: '#28a745', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '5px', fontWeight: 'bold' }}>
-          Стартирай симулацията
+        <button 
+          className={`sim-button ${loading ? 'loading' : ''}`}
+          onClick={startSim} 
+          disabled={loading}
+        >
+          {loading ? 'Simulation läuft...' : 'Simulation starten'}
         </button>
       </div>
 
       {result && (
-        <div style={{ marginTop: '20px', background: '#f4f4f4', padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
-          <h3>Резултати от симулацията:</h3>
-          <p>⏳ Средно време за чакане: <strong>{result.average_wait} мин.</strong></p>
-          <p>🎓 Обслужени студенти: <strong>{result.total_students}</strong></p>
+        <div className="results-box">
+          <h3>Simulationsergebnisse:</h3>
+          <div className="result-item">
+            <span>Durchschnittliche Wartezeit:</span>
+            <strong>{result.average_wait} Min.</strong>
+          </div>
+          <div className="result-item">
+            <span>Bediente Studenten:</span>
+            <strong>{result.total_students}</strong>
+          </div>
+          <div className="result-item">
+            <span>Abschlusszeit:</span>
+            <strong>{result.completion_time.toFixed(2)} Min.</strong>
+          </div>
         </div>
       )}
     </div>
