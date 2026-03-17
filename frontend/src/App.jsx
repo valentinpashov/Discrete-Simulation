@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
 function App() {
   const [params, setParams] = useState({ time: 100, students: 50, cashiers: 2, cookers: 3, seats: 20 });
@@ -19,12 +19,36 @@ function App() {
     finally { setLoading(false); }
   };
 
+  // Новата конфигурация на диаграмата - базирана на РЕЗУЛТАТИТЕ
   const doughnutData = {
-    labels: ['Köche', 'Kassierer', 'Sitzplätze'],
+    labels: ['Kochen', 'Kasse', 'Essen'],
     datasets: [{
-      data: [params.cookers, params.cashiers, params.seats],
-      backgroundColor: ['#ff6384', '#36a2eb', '#ffce56']
+      label: 'Zeitverteilung (Min)',
+      data: result ? [
+        result.breakdown.cooking, 
+        result.breakdown.checkout, 
+        result.breakdown.dining
+      ] : [0, 0, 0],
+      backgroundColor: [
+        '#ff6384', // Розово за готвене
+        '#36a2eb', // Синьо за каса
+        '#ffce56'  // Жълто за хранене
+      ],
+      hoverOffset: 4
     }]
+  };
+
+  const chartOptions = {
+    plugins: {
+      title: {
+        display: true,
+        text: 'Zeitaufteilung pro Student (Schnitt)',
+        font: { size: 16 }
+      },
+      legend: {
+        position: 'bottom'
+      }
+    }
   };
 
   return (
@@ -52,7 +76,7 @@ function App() {
             <hr style={{margin: '15px 0', border: '0', borderTop: '1px solid #eee'}} />
             
             <div className="result-item">
-              <span>Durchschnittlicher Wartezeit:</span>
+              <span>Durchschnittliche Gesamtzeit:</span>
               <strong style={{color: '#d9534f'}}>{result.average_wait} Min.</strong>
             </div>
             <div className="result-item">
@@ -61,8 +85,8 @@ function App() {
             </div>
           </div>
 
-          <div className="chart-container" style={{ width: '250px', margin: '20px auto' }}>
-            <Doughnut data={doughnutData} />
+          <div className="chart-container" style={{ width: '320px', margin: '20px auto' }}>
+            <Doughnut data={doughnutData} options={chartOptions} />
           </div>
         </div>
       )}
