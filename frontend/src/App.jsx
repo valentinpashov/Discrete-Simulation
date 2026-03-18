@@ -33,6 +33,14 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const formatTime = (decimalMinutes) => {
+    if (!decimalMinutes) return "0 min. 00 sec.";
+    const mins = Math.floor(decimalMinutes);
+    const secs = Math.round((decimalMinutes - mins) * 60);
+    if (secs === 60) return `${mins + 1} min. 00 sec.`;
+    return `${mins} min. ${secs < 10 ? '0' : ''}${secs} sec.`;
+  };
+
   const startSim = async () => {
     setLoading(true);
     try {
@@ -100,15 +108,15 @@ function App() {
           <div className="results-box">
             <h3>Ergebnisse:</h3>
             
-            <div className="result-item small">Kochen: <strong>{result.breakdown.cooking} Min.</strong></div>
-            <div className="result-item small">Kasse: <strong>{result.breakdown.checkout} Min.</strong></div>
-            <div className="result-item small">Essen: <strong>{result.breakdown.dining} Min.</strong></div>
+            <div className="result-item small">Kochen: <strong>{formatTime(result.breakdown.cooking)}</strong></div>
+            <div className="result-item small">Kasse: <strong>{formatTime(result.breakdown.checkout)}</strong></div>
+            <div className="result-item small">Essen: <strong>{formatTime(result.breakdown.dining)}</strong></div>
             
             <hr />
             
             <div className="result-item">
               <span>Durchschnittliche Gesamtzeit:</span>
-              <strong style={{color: '#d9534f'}}>{result.average_wait} Min.</strong>
+              <strong style={{color: '#d9534f'}}>{formatTime(result.average_wait)}</strong>
             </div>
             
             <div className="result-item">
