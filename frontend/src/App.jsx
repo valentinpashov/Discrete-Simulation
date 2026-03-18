@@ -104,40 +104,43 @@ function App() {
       </div>
 
       {result && (
-        <div className="results-wrapper">
-          <div className="results-box">
-            <h3>Ergebnisse:</h3>
-            
-            <div className="result-item small">Kochen: <strong>{formatTime(result.breakdown.cooking)}</strong></div>
-            <div className="result-item small">Kasse: <strong>{formatTime(result.breakdown.checkout)}</strong></div>
-            <div className="result-item small">Essen: <strong>{formatTime(result.breakdown.dining)}</strong></div>
-            
-            <hr />
-            
-            <div className="result-item">
-              <span>Durchschnittliche Gesamtzeit:</span>
-              <strong style={{color: '#d9534f'}}>{formatTime(result.average_wait)}</strong>
-            </div>
-            
-            <div className="result-item">
-              <span>Bediente Studenten:</span>
-              <strong style={{fontSize: '1.2em', color: '#2c3e50'}}>
-                {result.total_students} / {params.students}
-              </strong>
-            </div>
-          </div>
+  <div className="results-wrapper">
+    <div className="results-box">
+      <h3>Ergebnisse:</h3>
+      
+      <div className="result-item small">Kochen: <strong>{formatTime(result.breakdown.cooking)}</strong></div>
+      <div className="result-item small">Kasse: <strong>{formatTime(result.breakdown.checkout)}</strong></div>
+      <div className="result-item small">Essen: <strong>{formatTime(result.breakdown.dining)}</strong></div>
+      <div className="result-item small"> Warteschlange: <strong >
+          {formatTime(result.average_wait - (result.breakdown.cooking + result.breakdown.checkout + result.breakdown.dining))}
+        </strong>
+      </div>
+      
+      <hr />
+      
+      <div className="result-item">
+        <span>Durchschnittliche Gesamtzeit:</span>
+        <strong style={{ color: '#d9534f', fontSize: '1.1em' }}>{formatTime(result.average_wait)}</strong>
+      </div>
+      
+      <div className="result-item">
+        <span>Bediente Studenten:</span>
+        <strong style={{ fontSize: '1.2em', color: '#2c3e50' }}>
+          {result.total_students} / {params.students}
+        </strong>
+      </div>
+    </div>
 
-          <div className="charts-flex-container">
-            <div className="chart-card" style={{ width: '300px' }}>
-              <Doughnut data={doughnutData} options={{ plugins: { title: { display: true, text: 'Zeitaufteilung (Min)' } } }} />
-            </div>
-            
-            <div className="chart-card" style={{ width: '400px' }}>
-              <Bar data={barData} options={barOptions} />
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="charts-flex-container">
+      <div className="chart-card" style={{ width: '300px' }}>
+        <Doughnut data={doughnutData} options={{ plugins: { title: { display: true, text: 'Zeitaufteilung (Min)' } } }} />
+      </div>
+      <div className="chart-card" style={{ width: '400px' }}>
+        <Bar data={barData} options={barOptions} />
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
