@@ -1,12 +1,35 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from 'chart.js';
-import { Doughnut } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title
+} from 'chart.js';
+import { Doughnut, Bar } from 'react-chartjs-2';
 
-ChartJS.register(ArcElement, Tooltip, Legend, Title);
+ChartJS.register(
+  ArcElement, 
+  Tooltip, 
+  Legend, 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Title
+);
 
 function App() {
-  const [params, setParams] = useState({ time: 100, students: 50, cashiers: 2, cookers: 3, seats: 20 });
+  const [params, setParams] = useState({ 
+    time: 100, 
+    students: 50, 
+    cashiers: 2, 
+    cookers: 3, 
+    seats: 20 
+  });
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -15,40 +38,46 @@ function App() {
     try {
       const res = await axios.get('http://localhost:8000/simulate', { params });
       setResult(res.data);
-    } catch (err) { alert("Backend Error!"); }
-    finally { setLoading(false); }
+    } catch (err) { 
+      alert("Backend Error! Stellen Sie sicher, dass FastAPI läuft."); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
-  // Новата конфигурация на диаграмата - базирана на РЕЗУЛТАТИТЕ
   const doughnutData = {
     labels: ['Kochen', 'Kasse', 'Essen'],
     datasets: [{
-      label: 'Zeitverteilung (Min)',
-      data: result ? [
-        result.breakdown.cooking, 
-        result.breakdown.checkout, 
-        result.breakdown.dining
-      ] : [0, 0, 0],
-      backgroundColor: [
-        '#ff6384', // Розово за готвене
-        '#36a2eb', // Синьо за каса
-        '#ffce56'  // Жълто за хранене
-      ],
+      data: result ? [result.breakdown.cooking, result.breakdown.checkout, result.breakdown.dining] : [0, 0, 0],
+      backgroundColor: ['#ff6384', '#36a2eb', '#ffce56'],
       hoverOffset: 4
     }]
   };
 
-  const chartOptions = {
-    plugins: {
-      title: {
-        display: true,
-        text: 'Zeitaufteilung pro Student (Schnitt)',
-        font: { size: 16 }
+  const barData = {
+    labels: ['Studenten Status'],
+    datasets: [
+      {
+        label: 'Bediente Studenten',
+        data: result ? [result.total_students] : [0],
+        backgroundColor: '#4bc0c0',
       },
-      legend: {
-        position: 'bottom'
+      {
+        label: 'Geplante Studenten',
+        data: [params.students],
+        backgroundColor: '#e0e0e0',
       }
-    }
+    ]
+  };
+
+  const barOptions = {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom' },
+      title: { display: true, text: 'Durchsatz: Bediente Studenten vs. Gesamte Studenten' }
+    },
+    scales: { x: { beginAtZero: true } }
   };
 
   return (
@@ -56,12 +85,14 @@ function App() {
       <h1>Mensa Simulator</h1>
       
       <div className="input-group">
-        <label><span>Zeit (Min):</span><input type="number" value={params.time} onChange={e => setParams({...params, time: e.target.value})} /></label>
-        <label><span>Studenten:</span><input type="number" value={params.students} onChange={e => setParams({...params, students: e.target.value})} /></label>
-        <label><span>Kassierer:</span><input type="number" value={params.cashiers} onChange={e => setParams({...params, cashiers: e.target.value})} /></label>
-        <label><span>Köche:</span><input type="number" value={params.cookers} onChange={e => setParams({...params, cookers: e.target.value})} /></label>
-        <label><span>Sitzplätze:</span><input type="number" value={params.seats} onChange={e => setParams({...params, seats: e.target.value})} /></label>
-        <button className="sim-button" onClick={startSim} disabled={loading}>{loading ? 'Läuft...' : 'Simulation starten'}</button>
+        <label>Zeit (Min):<input type="number" value={params.time} onChange={e => setParams({...params, time: e.target.value})} /></label>
+        <label>Studenten:<input type="number" value={params.students} onChange={e => setParams({...params, students: e.target.value})} /></label>
+        <label>Kassierer:<input type="number" value={params.cashiers} onChange={e => setParams({...params, cashiers: e.target.value})} /></label>
+        <label>Köche:<input type="number" value={params.cookers} onChange={e => setParams({...params, cookers: e.target.value})} /></label>
+        <label>Sitzplätze:<input type="number" value={params.seats} onChange={e => setParams({...params, seats: e.target.value})} /></label>
+        <button className="sim-button" onClick={startSim} disabled={loading}>
+          {loading ? 'Simulation läuft...' : 'Simulation starten'}
+        </button>
       </div>
 
       {result && (
@@ -70,23 +101,32 @@ function App() {
             <h3>Ergebnisse:</h3>
             
             <div className="result-item small">Kochen: <strong>{result.breakdown.cooking} Min.</strong></div>
-            <div className="result-item small">Kassierer: <strong>{result.breakdown.checkout} Min.</strong></div>
+            <div className="result-item small">Kasse: <strong>{result.breakdown.checkout} Min.</strong></div>
             <div className="result-item small">Essen: <strong>{result.breakdown.dining} Min.</strong></div>
             
-            <hr style={{margin: '15px 0', border: '0', borderTop: '1px solid #eee'}} />
+            <hr />
             
             <div className="result-item">
               <span>Durchschnittliche Gesamtzeit:</span>
               <strong style={{color: '#d9534f'}}>{result.average_wait} Min.</strong>
             </div>
+            
             <div className="result-item">
               <span>Bediente Studenten:</span>
-              <strong>{result.total_students} / {params.students}</strong>
+              <strong style={{fontSize: '1.2em', color: '#2c3e50'}}>
+                {result.total_students} / {params.students}
+              </strong>
             </div>
           </div>
 
-          <div className="chart-container" style={{ width: '320px', margin: '20px auto' }}>
-            <Doughnut data={doughnutData} options={chartOptions} />
+          <div className="charts-flex-container">
+            <div className="chart-card" style={{ width: '300px' }}>
+              <Doughnut data={doughnutData} options={{ plugins: { title: { display: true, text: 'Zeitaufteilung (Min)' } } }} />
+            </div>
+            
+            <div className="chart-card" style={{ width: '400px' }}>
+              <Bar data={barData} options={barOptions} />
+            </div>
           </div>
         </div>
       )}
